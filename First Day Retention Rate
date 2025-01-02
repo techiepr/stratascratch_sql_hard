@@ -1,0 +1,12 @@
+with first_login as
+(
+select player_id,
+       min(login_date) as first_login
+from players_logins
+group by 1
+)
+select count(distinct pl.player_id)/(select count(distinct player_id) from players_logins) as pro
+from players_logins pl
+join first_login fl
+on pl.player_id = fl.player_id
+and pl.login_date = date_add(first_login, interval 1 day)
