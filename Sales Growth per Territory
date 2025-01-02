@@ -1,0 +1,31 @@
+with cte as
+(
+select territory_id,
+       concat('Q',quarter(order_date),'_', year(order_date)) as q_date,
+       sum(order_value) as total_value
+from fct_customer_sales f1
+join map_customer_territory m1
+on f1.cust_id = m1.cust_id
+group by 1,2
+order by 1,2
+), cte1 as
+(
+select territory_id,
+       case when q_date = 'Q3_2021' then 'Q3_2021' end as Q3_2021,
+       total_value
+from cte 
+where q_date = 'Q3_2021'
+)
+, cte2 as
+(
+select territory_id,
+       case when q_date = 'Q4_2021' then 'Q4_2021' end as Q4_2021,
+       total_value
+from cte 
+where q_date = 'Q4_2021'
+)
+select c1.territory_id,
+       (c2.total_value - c1.total_value)/c1.total_value*100 as growth
+from cte1 c1
+join cte2 c2
+on c1.territory_id = c2.territory_id  
