@@ -1,0 +1,24 @@
+with cte as
+(
+select m1.territory_id,
+       concat('Q',quarter(order_date),'_', year(order_date)) as q_date,
+       d1.prod_brand
+from map_customer_territory m1
+left join fct_customer_sales f1
+on m1.cust_id = f1.cust_id
+left join dim_product d1
+on f1.prod_sku_id = d1.prod_sku_id
+), cte1 as
+(
+select territory_id,
+        prod_brand,
+        count(prod_brand) as num_prod_brand
+from cte
+where q_date = 'Q4_2021'
+group by 1,2
+order by 1,2
+)
+select territory_id,
+       prod_brand,
+       num_prod_brand*100/ sum(num_prod_brand) over (partition by territory_id) as shares
+from cte1
