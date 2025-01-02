@@ -1,0 +1,17 @@
+with cte as
+(
+select session_id,
+       sum(timestampdiff(second,session_starttime,session_endtime)) as time_diff
+from user_sessions
+group by 1
+), cte1 as
+(select p1.post_id,
+       sum(c1.time_diff*p1.perc_viewed/100) as times_sec
+from cte c1
+join post_views p1
+on c1.session_id = p1.session_id
+group by 1)
+select post_id,
+       times_sec
+from cte1
+where times_sec>5
