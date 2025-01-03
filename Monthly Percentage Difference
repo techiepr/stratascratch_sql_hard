@@ -1,0 +1,16 @@
+with cte as
+(
+select date_format(created_at, '%Y-%m') as year_months,
+       sum(value) as current_value
+from sf_transactions
+group by 1
+), cte1 as
+(
+select year_months,
+       current_value,
+       lag(current_value) over (order by year_months) as previous_value
+from cte
+)
+select year_months,
+       round((current_value-previous_value)/previous_value *100,2) as percentage_change
+from cte1
