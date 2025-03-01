@@ -1,0 +1,27 @@
+with cte as
+(
+select player_id
+       ,match_date
+       ,match_result
+       ,row_number() over (partition by player_id order by match_date) as rwn1
+       ,row_number() over (partition by player_id,match_result order by match_date) as rwn2
+from players_results
+), cte1 as
+(
+select player_id
+       ,match_result
+       ,(rwn1-rwn2) as grp_id
+from cte
+where match_result = 'W'
+), cte2 as
+(
+select player_id
+       ,grp_id
+       ,count(*) as grp
+from cte1
+group by 1,2
+)
+select player_id
+       ,(grp) as streak
+from cte2
+where grp = (select max(grp) from cte2)
