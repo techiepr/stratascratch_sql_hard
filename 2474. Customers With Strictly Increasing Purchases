@@ -1,1 +1,25 @@
-
+with cte as
+(
+select customer_id
+       ,year(order_date) as years
+       ,sum(price) as purchase
+from orders
+group by customer_id, year(order_date)
+), cte1 as
+(
+select customer_id
+       ,years
+       ,purchase
+       ,years - rank() over (partition by customer_id order by purchase) as rnk
+from cte
+),cte2 as 
+(
+select customer_id
+       ,rnk
+       ,count(*) as streax
+from cte1
+group by customer_id, rnk
+)
+select distinct customer_id
+from cte2 
+where streax = (select max(streax) from cte2)
